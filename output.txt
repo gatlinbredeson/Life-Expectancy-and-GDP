@@ -1,0 +1,6 @@
+Country: Chile -- R2: 0.89843 -- coef: 1.06362
+Country: China -- R2: 0.80527 -- coef: 1.23000
+Country: Germany -- R2: 0.98116 -- coef: 0.92202
+Country: Mexico -- R2: 0.94617 -- coef: 0.56338
+Country: USA -- R2: 0.92683 -- coef: 0.80684
+Country: Zimbabwe -- R2: 0.94671 -- coef: 5.66278
