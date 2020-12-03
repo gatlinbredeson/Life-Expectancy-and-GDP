@@ -12,9 +12,9 @@ def get_label(col_name):
     :return: The label for the column name.
     """
     try:
-        lab = cols_labels[col_name]
+        lab = cols_labels[col_name.lower()]
     except KeyError:
-        lab = col_name.capitalize()
+        lab = col_name
     return lab
 
 
@@ -38,33 +38,29 @@ def multi_plot(dataframe, graph_type, var_x, *vars_y, uniform_axes=None, sub_plo
         if sub_plots:
             fig.add_subplot(2, 3, i+1)
 
-        x_lab = get_label(var_x)
         labels = []
+        x_lab = get_label(var_x)
 
         # Plot the variables for the country
         for var in vars_y:
             # Get the correct label for each variable
             y_lab = get_label(var)
-            y_orig = y_lab
             labels.append(y_lab)
-
-            if not sub_plots:
-                y_lab = country
 
             # plot with the type of graph indicated, otherwise raise ValueError
             if graph_type == 'plot':
-                plt.plot(country_frame[var_x], country_frame[var], label=y_lab)
+                plt.plot(country_frame[var_x], country_frame[var])
             elif graph_type == 'scatter':
-                plt.scatter(country_frame[var_x], country_frame[var], label=y_lab)
+                plt.scatter(country_frame[var_x], country_frame[var])
             else:
                 raise ValueError
 
             # Set the plot labels
             plt.xlabel(x_lab)
-            plt.xticks(rotation=55)
-            plt.ylabel(y_orig)
-            if len(vars_y) > 1:
-                plt.legend()
+            plt.ylabel(y_lab)
+
+        if var_x == 'year' and sub_plots:
+            plt.gca().set_xticks(country_frame.year[::3])
 
         # Set the plot titles
         labels_expanded = ', '.join(labels)
@@ -75,18 +71,21 @@ def multi_plot(dataframe, graph_type, var_x, *vars_y, uniform_axes=None, sub_plo
         if uniform_axes:
             plt.axis(uniform_axes)
 
-    # If a single graph, implement a legend
-    if not sub_plots:
-        plt.legend()
+    # Implement legends for single graphs, or subplots with more than one variable
+    if sub_plots and len(vars_y) > 1:
+        fig.legend(labels, loc='upper left')
+    elif not sub_plots:
+        plt.legend(countries_unique)
 
     # Set figure spacing and title
     plt.subplots_adjust(hspace=0.35, wspace=0.35)
-    fig.suptitle(f'{var_x.capitalize()} vs. {labels_expanded}')
+    fig.suptitle(f'{x_lab} vs. {labels_expanded}')
 
 
 # Get the data into a DataFrame
 df = pd.read_csv('all_data.csv')
 
+# Data cleaning and prep
 # Conform the column labels for consistency. "leaby" was "Life Expectancy at Birth (years)"
 df.columns = ['country', 'year', 'leaby', 'gdp']
 
@@ -111,6 +110,7 @@ df['gdp_normalized'] = df.groupby('country').gdp.transform(lambda x: (x - x.mean
 # Let's do it with leaby too
 df['leaby_normalized'] = df.groupby('country').leaby.transform(lambda x: (x - x.mean()) / x.std())
 
+# Use plots to get visuals of the data
 # Plot each country's GDP over time
 multi_plot(df, 'plot', 'year', 'gdp')
 
